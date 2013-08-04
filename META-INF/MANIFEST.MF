@@ -1,0 +1,16 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: QuickMotion
+Bundle-SymbolicName: quickmotion;singleton:=true
+Bundle-Version: 0.1
+Bundle-Activator: org.dimsuz.quickmotion.QuickMotionPlugin
+Bundle-Vendor: Dmitry Suzdalev
+Require-Bundle: org.eclipse.ui,
+ org.eclipse.core.runtime,
+ org.eclipse.jface.text,
+ org.eclipse.ui.editors,
+ org.eclipse.ui,
+ org.eclipse.core.runtime,
+ org.eclipse.ui.workbench
+Bundle-RequiredExecutionEnvironment: JavaSE-1.7
+Bundle-ActivationPolicy: lazy

@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.4"?>
+<plugin>
+   <extension
+         point="org.eclipse.ui.commands">
+      <command
+            categoryId="org.dimsuz.quickmotion.commands"
+            defaultHandler="org.dimsuz.quickmotion.commands.ToggleHandler"
+            id="org.dimsuz.quickmotion.commands.toggle"
+            name="Toggle QuickMotion">
+      </command>
+   </extension>
+   <extension
+         point="org.eclipse.ui.menus">
+      <menuContribution
+            allPopups="false"
+            locationURI="toolbar:org.eclipse.ui.main.toolbar?after=additions">
+         <toolbar
+               id="org.dimsuz.quickmotion.toolbar">
+            <command
+                  commandId="org.dimsuz.quickmotion.commands.toggle"
+                  icon="icons/sample.gif"
+                  style="toggle">
+            </command>
+         </toolbar>
+      </menuContribution>
+   </extension>
+
+
+</plugin>
