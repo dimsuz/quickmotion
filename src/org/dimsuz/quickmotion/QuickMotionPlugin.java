@@ -2,16 +2,14 @@ package org.dimsuz.quickmotion;
 
 import java.lang.reflect.Method;
 
-import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.ITextViewer;
-import org.eclipse.swt.custom.StyledText;
+import org.eclipse.jface.text.source.SourceViewer;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IEditorReference;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.eclipse.ui.texteditor.AbstractTextEditor;
-import org.eclipse.ui.texteditor.IDocumentProvider;
 import org.osgi.framework.BundleContext;
 
 /**
@@ -35,7 +33,7 @@ public class QuickMotionPlugin extends AbstractUIPlugin {
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see
      * org.eclipse.ui.plugin.AbstractUIPlugin#start(org.osgi.framework.BundleContext
      * )
@@ -48,7 +46,7 @@ public class QuickMotionPlugin extends AbstractUIPlugin {
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see
      * org.eclipse.ui.plugin.AbstractUIPlugin#stop(org.osgi.framework.BundleContext
      * )
@@ -61,7 +59,7 @@ public class QuickMotionPlugin extends AbstractUIPlugin {
 
     /**
      * Returns the shared instance
-     * 
+     *
      * @return the shared instance
      */
     public static QuickMotionPlugin getDefault() {
@@ -111,13 +109,9 @@ public class QuickMotionPlugin extends AbstractUIPlugin {
             if (viewer != null) {
                 // test for needed interfaces
                 ITextViewer textViewer = (ITextViewer) viewer;
-                StyledText textWidget = textViewer.getTextWidget();
-                if (textWidget != null) {
-                    IDocumentProvider dp = editor.getDocumentProvider();
-                    IDocument doc = dp.getDocument(editor.getEditorInput());
-                    textWidget.addKeyListener(new InjectedKeyListener(
-                            textWidget, doc));
-                }
+                SourceViewer sv = (SourceViewer) viewer;
+                MotionMarksPainter markerPainter = new MotionMarksPainter(textViewer);
+                sv.addPainter(markerPainter);
             }
         } catch (Exception exception) {
             System.err.println("Exception while injecting AbstractTextEditor");
