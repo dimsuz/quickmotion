@@ -26,13 +26,20 @@ public class MarksEngineTest {
     public void testSimpleSpacePostions() {
         List<Integer> pp;
 
-        pp = engine.getMarkPositions("mama mila ramu");
+        pp = MarksEngine.getMarkPositions("mama mila ramu");
         assertNotNull(pp);
         assertEquals(poslist(0, 5, 10, 14), pp);
 
-        pp = engine.getMarkPositions("mama");
+        pp = MarksEngine.getMarkPositions("mama");
         assertNotNull(pp);
         assertEquals(poslist(0, 4), pp);
+    }
+
+    @Test
+    public void testSkipsIndentationSpaces() {
+        List<Integer> pp;
+        pp = MarksEngine.getMarkPositions("    public    func");
+        assertEquals(poslist(0, 4, 14, 18), pp);
     }
 
 }

@@ -110,7 +110,7 @@ public class QuickMotionPlugin extends AbstractUIPlugin {
                 // test for needed interfaces
                 ITextViewer textViewer = (ITextViewer) viewer;
                 SourceViewer sv = (SourceViewer) viewer;
-                MotionMarksPainter markerPainter = new MotionMarksPainter(textViewer);
+                MotionMarksPainter markerPainter = new MotionMarksPainter(textViewer, editor);
                 sv.addPainter(markerPainter);
             }
         } catch (Exception exception) {
