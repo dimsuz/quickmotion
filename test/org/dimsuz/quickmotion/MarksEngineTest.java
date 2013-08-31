@@ -42,4 +42,12 @@ public class MarksEngineTest {
         assertEquals(poslist(0, 4, 14, 18), pp);
     }
 
+    @Test
+    public void testPairedSpecialSymbolPositions() {
+        List<Integer> pp;
+        pp = MarksEngine.getMarkPositions("help(i)some");
+        assertEquals(poslist(0, 5, 7, 11), pp);
+
+    }
+
 }
