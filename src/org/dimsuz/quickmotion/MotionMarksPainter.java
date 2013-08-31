@@ -2,6 +2,7 @@ package org.dimsuz.quickmotion;
 
 import java.util.List;
 
+import org.dimsuz.quickmotion.MarksEngine.JumpPosition;
 import org.eclipse.jdt.annotation.Nullable;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
@@ -26,17 +27,21 @@ import org.eclipse.ui.texteditor.AbstractTextEditor;
 public class MotionMarksPainter implements IPainter, PaintListener, KeyListener {
     private StyledText textWidget;
     private boolean isActive;
-    private final Color color;
+    private final Color fillColor;
+    private final Color lineColor;
+    private final Color labelColor;
     private final boolean firstPaint = true;
     private final ITextViewer textViewer;
-    private List<Integer> lineMarkers;
+    private List<JumpPosition> lineMarkers;
     private final AbstractTextEditor textEditor;
 
     public MotionMarksPainter(ITextViewer viewer, AbstractTextEditor editor) {
         textWidget = viewer.getTextWidget();
         textViewer = viewer;
         textEditor = editor;
-        color = new Color(textWidget.getDisplay(), 255, 127, 0);
+        fillColor = new Color(textWidget.getDisplay(), 255, 127, 0);
+        lineColor = new Color(textWidget.getDisplay(), 0, 0, 255);
+        labelColor = new Color(textWidget.getDisplay(), 0, 100, 100);
         textWidget.addKeyListener(this);
     }
 
@@ -48,7 +53,9 @@ public class MotionMarksPainter implements IPainter, PaintListener, KeyListener 
     public void dispose() {
         textWidget.removeKeyListener(this);
         textWidget = null;
-        color.dispose();
+        fillColor.dispose();
+        lineColor.dispose();
+        labelColor.dispose();
     }
 
     @Override
@@ -98,18 +105,21 @@ public class MotionMarksPainter implements IPainter, PaintListener, KeyListener 
             try {
                 line = textViewer.getDocument().get(lineInfo.getOffset(), lineInfo.getLength());
             } catch (BadLocationException e1) {
-                // TODO Auto-generated catch block
                 e1.printStackTrace();
             }
             if(line != null && lineInfo != null) {
                 lineMarkers = MarksEngine.getMarkPositions(line);
                 int lineHeight = textWidget.getLineHeight(offset);
-                e.gc.setForeground(color);
+                e.gc.setBackground(fillColor);
                 e.gc.setLineStyle(SWT.LINE_SOLID);
-                e.gc.setLineWidth(1);
-                for (Integer cpos : lineMarkers) {
-                    Point p = textWidget.getLocationAtOffset(lineInfo.getOffset() + cpos);
-                    e.gc.drawLine(p.x, p.y, p.x, p.y+lineHeight);
+                e.gc.setLineWidth(2);
+                for (JumpPosition cpos : lineMarkers) {
+                    Point p = textWidget.getLocationAtOffset(lineInfo.getOffset() + cpos.pos);
+                    //e.gc.fillRectangle(p.x, p.y, pn.x - p.x, lineHeight);
+                    e.gc.setForeground(lineColor);
+                    e.gc.drawLine(p.x, p.y-3, p.x, p.y+lineHeight+3);
+                    e.gc.setForeground(labelColor);
+                    e.gc.drawText(cpos.label, p.x, p.y);
                 }
             }
         }
@@ -127,7 +137,7 @@ public class MotionMarksPainter implements IPainter, PaintListener, KeyListener 
         } else if(e.character == 'd' && lineMarkers != null) {
             IRegion lineInfo = getLineInfo(getModelCaret());
             if(lineInfo != null) {
-                int jumpOffset = lineInfo.getOffset() + lineMarkers.get(tmpCurMarkerIdx);
+                int jumpOffset = lineInfo.getOffset() + lineMarkers.get(tmpCurMarkerIdx).pos;
                 ISelectionProvider selProvider = textEditor.getSelectionProvider();
                 selProvider.setSelection(new TextSelection(jumpOffset, 0));
                 tmpCurMarkerIdx++;
