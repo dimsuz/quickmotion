@@ -19,12 +19,14 @@ import org.eclipse.swt.events.KeyEvent;
 import org.eclipse.swt.events.KeyListener;
 import org.eclipse.swt.events.PaintEvent;
 import org.eclipse.swt.events.PaintListener;
+import org.eclipse.swt.events.VerifyEvent;
+import org.eclipse.swt.events.VerifyListener;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.ui.texteditor.AbstractTextEditor;
 
 
-public class MotionMarksPainter implements IPainter, PaintListener, KeyListener {
+public class MotionMarksPainter implements IPainter, PaintListener, KeyListener, VerifyListener {
     private StyledText textWidget;
     private boolean isActive;
     private final Color fillColor;
@@ -43,6 +45,7 @@ public class MotionMarksPainter implements IPainter, PaintListener, KeyListener 
         lineColor = new Color(textWidget.getDisplay(), 0, 0, 255);
         labelColor = new Color(textWidget.getDisplay(), 0, 100, 100);
         textWidget.addKeyListener(this);
+        textWidget.addVerifyListener(this);
     }
 
     public void initialize() {
@@ -67,6 +70,7 @@ public class MotionMarksPainter implements IPainter, PaintListener, KeyListener 
                 textWidget.redraw();
             }
         }
+        lineMarkers = null;
     }
 
     private void activate() {
@@ -107,6 +111,7 @@ public class MotionMarksPainter implements IPainter, PaintListener, KeyListener 
             } catch (BadLocationException e1) {
                 e1.printStackTrace();
             }
+
             if(line != null && lineInfo != null) {
                 lineMarkers = MarksEngine.getMarkPositions(line);
                 int lineHeight = textWidget.getLineHeight(offset);
@@ -129,31 +134,48 @@ public class MotionMarksPainter implements IPainter, PaintListener, KeyListener 
     public void setPositionManager(IPaintPositionManager manager) {
     }
 
-    private int tmpCurMarkerIdx = 0;
     @Override
     public void keyPressed(KeyEvent e) {
-        if (e.keyCode == SWT.ALT) {
-            activate();
-        } else if(e.character == 'd' && lineMarkers != null) {
+        JumpPosition marker;
+        if(lineMarkers != null && (marker = findMarker(e.character, lineMarkers)) != null) {
             IRegion lineInfo = getLineInfo(getModelCaret());
             if(lineInfo != null) {
-                int jumpOffset = lineInfo.getOffset() + lineMarkers.get(tmpCurMarkerIdx).pos;
+                int jumpOffset = lineInfo.getOffset() + marker.pos;
                 ISelectionProvider selProvider = textEditor.getSelectionProvider();
                 selProvider.setSelection(new TextSelection(jumpOffset, 0));
-                tmpCurMarkerIdx++;
-                if(tmpCurMarkerIdx >= lineMarkers.size()) {
-                    tmpCurMarkerIdx = 0;
-                }
             }
+            deactivate(true);
+        } else {
+            // no activator key pressed, no marker jump issued => nothing to do
+            deactivate(true);
         }
     }
 
     @Override
     public void keyReleased(KeyEvent e) {
-        if (e.keyCode == SWT.ALT) {
-            deactivate(true);
-            lineMarkers = null;
+        System.out.println("pressed "+e.character);
+        if (e.keyCode == SWT.CTRL) {
+            // TODO activate only if pressed and released at same offset!
+            activate();
         }
+    }
+
+    private static @Nullable JumpPosition findMarker(char c, List<JumpPosition> markers) {
+        for (JumpPosition jumpPosition : markers) {
+            if(jumpPosition.label.equals(String.valueOf(c))) {
+                return jumpPosition;
+            }
+        }
+        return null;
+    }
+
+    private static @Nullable JumpPosition findMarker(String s, List<JumpPosition> markers) {
+        for (JumpPosition jumpPosition : markers) {
+            if(jumpPosition.label.equals(s)) {
+                return jumpPosition;
+            }
+        }
+        return null;
     }
 
     /**
@@ -182,5 +204,15 @@ public class MotionMarksPainter implements IPainter, PaintListener, KeyListener 
             e1.printStackTrace();
         }
         return null;
+    }
+
+    @Override
+    public void verifyText(VerifyEvent e) {
+        System.out.println("veryfing "+e.text);
+        if(lineMarkers != null && (findMarker(e.text, lineMarkers)) != null) {
+            e.doit = false;
+        } else {
+            e.doit = true;
+        }
     }
 }
