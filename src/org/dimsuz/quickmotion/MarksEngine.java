@@ -8,6 +8,7 @@ import java.util.regex.Pattern;
 public class MarksEngine {
 
     private static Pattern pattern = Pattern.compile("(?:\\s+|\\(|\\))");
+    private static String[] labelsPool = new String[] { "a", "s", "d", "f", "g", "h", "j", "k", "l", "z", "x", "c" };
 
     public static class JumpPosition {
         /**
@@ -30,14 +31,16 @@ public class MarksEngine {
     public static List<JumpPosition> getMarkPositions(String line) {
         ArrayList<JumpPosition> result = new ArrayList<>();
 
-        result.add(JumpPosition.create(0, "a"));
+        int poolPos = 0;
+
+        result.add(JumpPosition.create(0, labelsPool[poolPos++]));
 
         Matcher m = pattern.matcher(line);
         while(m.find()) {
-            result.add(JumpPosition.create(m.end(), "b"));
+            result.add(JumpPosition.create(m.end(), labelsPool[poolPos++]));
         }
 
-        result.add(JumpPosition.create(line.length(), "c"));
+        result.add(JumpPosition.create(line.length(), labelsPool[poolPos++]));
 
         return result;
     }
